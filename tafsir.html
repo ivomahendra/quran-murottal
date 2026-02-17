@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tafsir Al-Quran</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="tafsir-page">
+
+<!-- ═══ TAFSIR HEADER ═══ -->
+<header class="tafsir-header">
+    <div class="tafsir-title-area">
+        <h1>📖 Tafsir Al-Quran</h1>
+        <p id="tafsir-subtitle">Memuat...</p>
+    </div>
+    <button class="btn-close-tafsir" onclick="window.close()" title="Tutup">✕</button>
+</header>
+
+<!-- ═══ AYAT YANG DITAFSIRKAN ═══ -->
+<section class="tafsir-ayah-section" id="tafsir-ayah-section">
+    <div class="tafsir-ayah-card">
+        <div class="ayah-arabic-display" id="tafsir-arabic" dir="rtl">
+            Memuat teks Arab...
+        </div>
+        <div class="ayah-translation-display" id="tafsir-translation">
+            Memuat terjemahan...
+        </div>
+    </div>
+</section>
+
+<!-- ═══ PILIH SUMBER TAFSIR ═══ -->
+<section class="tafsir-source-section">
+    <label>Sumber Tafsir:</label>
+    <select id="tafsir-source" onchange="loadTafsir()">
+        <option value="id.muntakhab">Tafsir Al-Muntakhab (Indonesia)</option>
+        <option value="id.jalalayn">Tafsir Jalalayn (Indonesia)</option>
+        <option value="en.ibn-kathir">Tafsir Ibn Kathir (English)</option>
+    </select>
+</section>
+
+<!-- ═══ ISI TAFSIR ═══ -->
+<section class="tafsir-content-section">
+    <div class="tafsir-body" id="tafsir-body">
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Memuat tafsir...</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ NAVIGASI AYAT ═══ -->
+<div class="tafsir-nav">
+    <button class="btn-nav" onclick="navigateAyah(-1)" id="btn-prev-ayah">◀ Ayat Sebelumnya</button>
+    <span id="tafsir-ayah-indicator">Ayat 1</span>
+    <button class="btn-nav" onclick="navigateAyah(1)" id="btn-next-ayah">Ayat Selanjutnya ▶</button>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    let currentSurah = parseInt(params.get('surah')) || 1;
+    let currentAyah = parseInt(params.get('ayah')) || 1;
+    let totalAyahs = parseInt(params.get('total')) || 7;
+    let surahName = params.get('name') || 'Al-Fatihah';
+
+    // Load theme dari parent
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.title = `Tafsir ${surahName} : Ayat ${currentAyah}`;
+        loadTafsir();
+    });
+
+    async function loadTafsir() {
+        const source = document.getElementById('tafsir-source').value;
+        const body = document.getElementById('tafsir-body');
+        const arabicEl = document.getElementById('tafsir-arabic');
+        const translationEl = document.getElementById('tafsir-translation');
+
+        document.getElementById('tafsir-subtitle').textContent =
+            `${surahName} — Ayat ${currentAyah} dari ${totalAyahs}`;
+        document.getElementById('tafsir-ayah-indicator').textContent =
+            `Ayat ${currentAyah}`;
+
+        body.innerHTML = '<div class="loading-container"><div class="spinner"></div><p>Memuat tafsir...</p></div>';
+        arabicEl.textContent = 'Memuat...';
+        translationEl.textContent = 'Memuat...';
+
+        try {
+            // Ambil teks Arab + Terjemahan + Tafsir sekaligus
+            const ref = `${currentSurah}:${currentAyah}`;
+
+            const [arabicRes, transRes, tafsirRes] = await Promise.all([
+                fetch(`https://api.alquran.cloud/v1/ayah/${ref}/quran-uthmani`).then(r => r.json()),
+                fetch(`https://api.alquran.cloud/v1/ayah/${ref}/id.indonesian`).then(r => r.json()),
+                fetch(`https://api.alquran.cloud/v1/ayah/${ref}/${source}`).then(r => r.json())
+            ]);
+
+            arabicEl.textContent = arabicRes.data.text;
+            translationEl.textContent = transRes.data.text;
+
+            body.innerHTML = `
+                <div class="tafsir-text">
+                    <h3>📝 ${document.getElementById('tafsir-source').selectedOptions[0].text}</h3>
+                    <p>${tafsirRes.data.text}</p>
+                </div>
+            `;
+
+            document.title = `Tafsir ${surahName} : Ayat ${currentAyah}`;
+
+            // Update tombol navigasi
+            document.getElementById('btn-prev-ayah').disabled = (currentAyah <= 1);
+            document.getElementById('btn-next-ayah').disabled = (currentAyah >= totalAyahs);
+
+        } catch (error) {
+            body.innerHTML = `
+                <div class="error-msg">
+                    <p>❌ Gagal memuat tafsir.</p>
+                    <p>Periksa koneksi internet Anda.</p>
+                    <button onclick="loadTafsir()" class="btn-retry">🔄 Coba Lagi</button>
+                </div>
+            `;
+        }
+    }
+
+    function navigateAyah(direction) {
+        const newAyah = currentAyah + direction;
+        if (newAyah >= 1 && newAyah <= totalAyahs) {
+            currentAyah = newAyah;
+            loadTafsir();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+</script>
+</body>
+</html>

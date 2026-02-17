@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Murottal Al-Quran</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="top-nav">
+    <a href="index.html" class="nav-back">← Daftar Surah</a>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+</nav>
+
+<!-- ═══ SURAH HEADER ═══ -->
+<header class="surah-header" id="surah-header">
+    <div class="surah-title-area">
+        <div class="surah-number-big" id="surah-number-big">1</div>
+        <div>
+            <h1 id="surah-name-ar" class="surah-name-arabic">ﺍﻟﻔﺎﺗﺤﺔ</h1>
+            <h2 id="surah-name-en">Al-Fatihah</h2>
+            <p id="surah-meta-info">Makkiyah • 7 Ayat • The Opening</p>
+        </div>
+    </div>
+</header>
+
+<!-- ═══ CONTROL PANEL (Setelah Judul) ═══ -->
+<section class="control-panel" id="control-panel">
+
+    <!-- Baris 1: Navigasi Surah -->
+    <div class="control-row nav-row">
+        <button class="btn-nav" id="btn-prev-surah" onclick="navigateSurah(-1)">
+            ◀ Surah Sebelumnya
+        </button>
+        <select id="surah-selector" class="surah-selector" onchange="goToSurah(this.value)">
+            <option>Memuat...</option>
+        </select>
+        <button class="btn-nav" id="btn-next-surah" onclick="navigateSurah(1)">
+            Surah Selanjutnya ▶
+        </button>
+    </div>
+
+    <!-- Baris 2: Pengaturan -->
+    <div class="control-row settings-row">
+        <div class="control-group">
+            <label>🎙️ Qari</label>
+            <select id="qari-select" onchange="changeQari(this.value)">
+                <option value="ar.alafasy">Mishary Alafasy</option>
+                <option value="ar.abdulbasit">Abdul Basit</option>
+                <option value="ar.husary">Al-Husary</option>
+                <option value="ar.minshawi">Al-Minshawi</option>
+                <option value="ar.abdurrahmaansudais">As-Sudais</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>🌐 Terjemahan</label>
+            <select id="lang-select" onchange="changeLanguage(this.value)">
+                <option value="id.indonesian">🇮🇩 Indonesia</option>
+                <option value="en.sahih">🇬🇧 English</option>
+                <option value="ms.basmeih">🇲🇾 Melayu</option>
+                <option value="tr.diyanet">🇹🇷 Türkçe</option>
+                <option value="fr.hamidullah">🇫🇷 Français</option>
+                <option value="de.aburida">🇩🇪 Deutsch</option>
+                <option value="ru.kuliev">🇷🇺 Русский</option>
+                <option value="zh.majian">🇨🇳 中文</option>
+                <option value="ja.japanese">🇯🇵 日本語</option>
+                <option value="ko.korean">🇰🇷 한국어</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Baris 3: Play Controls -->
+    <div class="control-row play-row">
+        <div class="play-buttons">
+            <button class="btn-play-main" id="btn-play-all" onclick="playAll()">
+                ▶ Play Seluruh Surah
+            </button>
+        </div>
+        <div class="play-specific">
+            <div class="control-group">
+                <label>Dari Ayat</label>
+                <select id="from-ayah"></select>
+            </div>
+            <div class="control-group">
+                <label>Sampai Ayat</label>
+                <select id="to-ayah"></select>
+            </div>
+            <button class="btn-play-range" onclick="playRange()">
+                ▶ Play Ayat Terpilih
+            </button>
+        </div>
+    </div>
+
+<!-- Baris 4: Opsi Tambahan -->
+<div class="control-row options-row">
+    <label class="checkbox-label">
+        <input type="checkbox" id="opt-auto-scroll" checked>
+        <span>Auto Scroll</span>
+    </label>
+    <label class="checkbox-label">
+        <input type="checkbox" id="opt-repeat">
+        <span>Ulangi Surah</span>
+    </label>
+
+    <!-- ═══ BARU: Auto Next Surah ═══ -->
+    <label class="checkbox-label">
+        <input type="checkbox" id="opt-continuous" checked>
+        <span>Lanjut Surah Berikutnya</span>
+    </label>
+
+    <label class="checkbox-label">
+        <input type="checkbox" id="opt-show-translation" checked>
+        <span>Tampilkan Terjemahan</span>
+    </label>
+    <label class="checkbox-label">
+        <input type="checkbox" id="opt-show-latin">
+        <span>Tampilkan Latin</span>
+    </label>
+</div>
+</section>
+
+<!-- ═══ BISMILLAH ═══ -->
+<div class="bismillah" id="bismillah">
+    <span>بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
+</div>
+
+<!-- ═══ QURAN CONTAINER ═══ -->
+<main class="quran-container" id="quran-container">
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Memuat Al-Quran...</p>
+    </div>
+</main>
+
+<!-- ═══ BOTTOM PLAYER BAR (Fixed) ═══ -->
+<div class="player-bar" id="player-bar">
+    <div class="player-progress">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="player-content">
+        <div class="player-info">
+            <span class="now-playing" id="now-playing">Siap diputar</span>
+            <span class="player-time" id="player-time">0:00</span>
+        </div>
+        <div class="player-controls">
+            <button onclick="player.previous()" title="Ayat Sebelumnya">⏮</button>
+            <button onclick="togglePlay()" id="btn-toggle-play" class="btn-main-toggle" title="Play/Pause">▶</button>
+            <button onclick="player.next()" title="Ayat Selanjutnya">⏭</button>
+            <button onclick="player.stop()" title="Stop">⏹</button>
+        </div>
+        <div class="player-volume">
+            <span>🔊</span>
+            <input type="range" id="volume-slider" min="0" max="100" value="80" oninput="player.setVolume(this.value)">
+        </div>
+    </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/player.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

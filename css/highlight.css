@@ -1,0 +1,96 @@
+/* ============== highlight.css ============== */
+
+/* Efek Stabilo / Highlight saat ayat sedang dibacakan */
+
+.ayah-block {
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border-left: 4px solid transparent;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+/* ═══ EFEK STABILO AKTIF ═══ */
+.ayah-block.active {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 235, 59, 0.2) 0%,     /* Kuning transparan */
+        rgba(255, 193, 7, 0.15) 50%,
+        rgba(255, 235, 59, 0.2) 100%
+    );
+    border-left: 4px solid #f59e0b;
+    box-shadow:
+        0 0 20px rgba(255, 193, 7, 0.15),
+        inset 0 0 30px rgba(255, 235, 59, 0.05);
+    transform: scale(1.01);
+}
+
+/* Highlight pada teks Arab saat aktif */
+.ayah-block.active .arabic-text {
+    color: #1a1a2e;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight pada terjemahan saat aktif */
+.ayah-block.active .translation-text {
+    color: #1e3a5f;
+    font-weight: 500;
+}
+
+/* Animasi glow berulang saat aktif */
+.ayah-block.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    background: rgba(255, 235, 59, 0.1);
+    animation: pulse-glow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* ═══ TEKS ARAB ═══ */
+.arabic-text {
+    font-family: 'KFGQPC Uthmanic Script HAFS', 'Scheherazade New', serif;
+    font-size: 2rem;
+    line-height: 3.5;
+    color: #2d3436;
+    text-align: right;
+    direction: rtl;
+}
+
+/* ═══ TERJEMAHAN ═══ */
+.translation-text {
+    font-size: 1rem;
+    color: #636e72;
+    line-height: 1.8;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #dfe6e9;
+}
+
+/* ═══ DARK MODE ═══ */
+.dark .ayah-block.active {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 193, 7, 0.15) 0%,
+        rgba(255, 152, 0, 0.1) 100%
+    );
+    border-left-color: #fbbf24;
+}
+
+.dark .arabic-text {
+    color: #f1f1f1;
+}
+
+.dark .translation-text {
+    color: #b0b0b0;
+}
