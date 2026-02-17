@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Murottal Al-Quran Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="main-header">
+    <div class="header-content">
+        <div class="header-icon">☪</div>
+        <h1>Murottal Al-Quran</h1>
+        <p>Baca, Dengarkan & Pahami Al-Quran dengan Terjemahan</p>
+    </div>
+    <div class="header-controls">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-surah" placeholder="Cari surah..." oninput="filterSurah(this.value)">
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Dark/Light Mode">🌙</button>
+    </div>
+</header>
+
+<!-- ═══ QUICK PLAY BAR ═══ -->
+<section class="quick-play-section">
+    <div class="quick-play-card">
+        <h3>▶ Quick Play</h3>
+        <div class="quick-play-controls">
+            <div class="control-group">
+                <label>Surah</label>
+                <select id="quick-surah">
+                    <option value="">Memuat...</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Qari</label>
+                <select id="quick-qari">
+                    <option value="ar.alafasy">Mishary Alafasy</option>
+                    <option value="ar.abdulbasit">Abdul Basit</option>
+                    <option value="ar.husary">Al-Husary</option>
+                    <option value="ar.minshawi">Al-Minshawi</option>
+                </select>
+            </div>
+            <button class="btn-play-all" onclick="playQuickSurah()">
+                ▶ Play Surah
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ SURAH LIST ═══ -->
+<section class="surah-list-section">
+    <div class="section-header">
+        <h2>📖 Daftar Surah</h2>
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterType('all', this)">Semua</button>
+            <button class="filter-tab" onclick="filterType('Meccan', this)">Makkiyah</button>
+            <button class="filter-tab" onclick="filterType('Medinan', this)">Madaniyah</button>
+        </div>
+    </div>
+    <div class="surah-grid" id="surah-grid">
+        <!-- Surah cards rendered by JS -->
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Memuat daftar surah...</p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="main-footer">
+    <p>Data dari <a href="https://alquran.cloud/api" target="_blank">AlQuran Cloud API</a> |
+    Audio dari <a href="https://everyayah.com" target="_blank">EveryAyah</a></p>
+    <p>Hosted on GitHub Pages • <a href="https://ivomahendra.github.io/" target="_blank">By Ivo_Mahendra</a> • Made with ❤️</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+    let allSurahs = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        loadTheme();
+        allSurahs = await QuranAPI.getSurahList();
+        renderSurahGrid(allSurahs);
+        populateQuickPlay(allSurahs);
+    });
+
+    function renderSurahGrid(surahs) {
+        const grid = document.getElementById('surah-grid');
+        grid.innerHTML = '';
+
+        surahs.forEach(surah => {
+            const card = document.createElement('a');
+            card.href = `surah.html?surah=${surah.number}`;
+            card.className = 'surah-card';
+            card.dataset.type = surah.revelationType;
+            card.innerHTML = `
+                <div class="surah-number">${surah.number}</div>
+                <div class="surah-info">
+                    <h3>${surah.englishName}</h3>
+                    <p class="surah-meaning">${surah.englishNameTranslation}</p>
+                </div>
+                <div class="surah-meta">
+                    <span class="surah-arabic">${surah.name}</span>
+                    <span class="surah-ayahs">${surah.numberOfAyahs} Ayat</span>
+                    <span class="surah-type ${surah.revelationType.toLowerCase()}">${surah.revelationType === 'Meccan' ? 'Makkiyah' : 'Madaniyah'}</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function populateQuickPlay(surahs) {
+        const select = document.getElementById('quick-surah');
+        select.innerHTML = '';
+        surahs.forEach(s => {
+            select.innerHTML += `<option value="${s.number}">${s.number}. ${s.englishName} (${s.name})</option>`;
+        });
+    }
+
+    function filterSurah(query) {
+        const q = query.toLowerCase();
+        const filtered = allSurahs.filter(s =>
+            s.englishName.toLowerCase().includes(q) ||
+            s.name.includes(query) ||
+            s.number.toString().includes(q) ||
+            s.englishNameTranslation.toLowerCase().includes(q)
+        );
+        renderSurahGrid(filtered);
+    }
+
+    function filterType(type, btn) {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (type === 'all') {
+            renderSurahGrid(allSurahs);
+        } else {
+            renderSurahGrid(allSurahs.filter(s => s.revelationType === type));
+        }
+    }
+
+    function playQuickSurah() {
+        const surah = document.getElementById('quick-surah').value;
+        const qari = document.getElementById('quick-qari').value;
+        window.location.href = `surah.html?surah=${surah}&qari=${qari}&autoplay=1`;
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        document.querySelector('.theme-toggle').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    function loadTheme() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark');
+            document.querySelector('.theme-toggle').textContent = '☀️';
+        }
+    }
+</script>
+</body>
+</html>
